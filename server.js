@@ -37,28 +37,29 @@ contactEmail.verify((error) =>{
     }
 });
 
-router.post("/contact", (req, res) =>{
-    const name = req.body.firstname + req.body.lastname;
+router.post("/contact", (req, res) => {
+    console.log("Received contact request:", req.body);
+    const name = `${req.body.firstname || ''} ${req.body.lastname || ''}`.trim() || "Unknown Sender";
     const email = req.body.email;
     const message = req.body.message;
     const phone = req.body.phone;
     const mail = {
-        from: name,
+        from: "Portfolio Contact Form <martinsolumi@gmail.com>",
         to: "martinsolumi@gmail.com",
-        subject:" Contact Form Submission - Portfolio",
+        replyTo: email,
+        subject: "Contact Form Submission - Portfolio",
         html: `<p>Name: ${name}</p>
-               <p>Email: ${email}</P>
-               <p>Phone: ${phone}</P>
+               <p>Email: ${email}</p>
+               <p>Phone: ${phone}</p>
                <p>Message: ${message}</p>`
-
     };
-    contactEmail.sendMail(mail, (error) =>{
+    contactEmail.sendMail(mail, (error) => {
         if (error) {
-            res.json(error);
-            console.log(error)
-
-        }else{
-            res.json({ code:200, status: "Message Sent"});
+            console.error("Error sending email:", error);
+            res.status(500).json({ code: 500, status: "Error", message: error.message });
+        } else {
+            console.log("Email sent successfully");
+            res.json({ code: 200, status: "Message Sent" });
         }
-    })
-} )
+    });
+});
